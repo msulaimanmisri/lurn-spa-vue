@@ -6,12 +6,10 @@
 
     <Head title="Homepage" />
 
-    <div class="bg-gray-50 text-black/50">
+    <div class="bg-gray-50 text-black/50 p-6">
         <div class="flex">
-            <Link :href="route('page.index')">
-                <button class="bg-red-500 px-6 py-3 rounded-md shadow-md m-6">
-                    Login
-                </button>
+            <Link :href="route('login')" class="bg-red-500 text-white rounded-lg py-3 px-8">
+                Login
             </Link>
         </div>
     </div>

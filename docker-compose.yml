@@ -1,0 +1,86 @@
+# Docker Compose Configuration for Laravel Application with PHP-FPM, Nginx, and MariaDB
+services:
+  ## PHP-FPM Application Service
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+
+    container_name: spavue-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./docker/php/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini
+    networks:
+      - spavue-network
+    depends_on:
+      - database
+
+  ## Nginx Web Server
+  web:
+    image: nginx:latest
+    container_name: spavue-web
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - spavue-network
+    depends_on:
+      - app
+
+  ## SSL
+
+  ## MariaDB Database
+  database:
+    image: mariadb:latest
+    container_name: spavue-db
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_DATABASE}
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MARIADB_USER: ${DB_USERNAME}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - spavue-network
+
+  ## Redis
+  redis:
+    image: redis:alpine
+    container_name: spavue-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - spavue-network
+
+  ## PHPMyAdmin
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: spavue-phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: database
+      PMA_USER: ${DB_USERNAME}
+      PMA_PASSWORD: ${DB_PASSWORD}
+      PMA_DATABASE: ${DB_DATABASE}
+    networks:
+      - spavue-network
+    depends_on:
+      - database
+
+## Network and Volume Definitions
+networks:
+  spavue-network:
+    driver: bridge
+
+volumes:
+  mariadb_data:
+    driver: local
