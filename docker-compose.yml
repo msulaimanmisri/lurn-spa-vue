@@ -8,12 +8,16 @@ networks:
 volumes: 
   mariadb_data:
     driver: local
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
 
 # ========
 # Docker Compose Configuration for Laravel Application
 # ========
 services:
-  ## PHP-FPM
+  ## FrankenPHP (Caddy + PHP)
   app:
     container_name: spavue-app
     restart: unless-stopped
@@ -21,29 +25,29 @@ services:
       context: .
       dockerfile: docker/Dockerfile
 
-    working_dir: /var/www
+    working_dir: /app
+    ports:
+      - "8000:8000"
+    command:
+      - php
+      - artisan
+      - octane:frankenphp
+      - --host=0.0.0.0
+      - --port=8000
+      - --workers=auto
+      - --max-requests=500
+      - --watch
+      - --poll
     volumes:
-      - ./:/var/www
+      - ./:/app
+      - ./docker/frankenphp/Caddyfile:/etc/frankenphp/Caddyfile:ro
       - ./docker/php/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini
+      - caddy_data:/data
+      - caddy_config:/config
     networks:
       - spavue-network
     depends_on:
       - database
-
-  ## Nginx Web Server
-  web:
-    image: nginx:latest
-    container_name: spavue-web
-    restart: unless-stopped
-    ports:
-      - "8000:80"
-    volumes:
-      - ./:/var/www
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
-    networks: 
-      - spavue-network
-    depends_on:
-      - app
 
   ## MariaDB Database
   database:
