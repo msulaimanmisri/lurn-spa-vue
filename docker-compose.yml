@@ -1,13 +1,26 @@
-# Docker Compose Configuration for Laravel Application with PHP-FPM, Nginx, and MariaDB
+# ========
+# Network and Volume Definitions
+# ========
+networks:
+  spavue-network:
+    driver: bridge
+
+volumes: 
+  mariadb_data:
+    driver: local
+
+# ========
+# Docker Compose Configuration for Laravel Application
+# ========
 services:
-  ## PHP-FPM Application Service
+  ## PHP-FPM
   app:
+    container_name: spavue-app
+    restart: unless-stopped
     build:
       context: .
       dockerfile: docker/Dockerfile
 
-    container_name: spavue-app
-    restart: unless-stopped
     working_dir: /var/www
     volumes:
       - ./:/var/www
@@ -27,12 +40,10 @@ services:
     volumes:
       - ./:/var/www
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
-    networks:
+    networks: 
       - spavue-network
     depends_on:
       - app
-
-  ## SSL
 
   ## MariaDB Database
   database:
@@ -75,12 +86,3 @@ services:
       - spavue-network
     depends_on:
       - database
-
-## Network and Volume Definitions
-networks:
-  spavue-network:
-    driver: bridge
-
-volumes:
-  mariadb_data:
-    driver: local
