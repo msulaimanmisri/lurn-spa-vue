@@ -1,19 +1,19 @@
 <?php
 
-namespace App\Http\Controllers\PublicPages;
+namespace App\Http\Controllers\Product;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class HomepageController extends Controller
+class ProductCreateController extends Controller
 {
     /**
      * Handle the incoming request.
      */
     public function __invoke(): Response
     {
-        return Inertia::render('Home');
+        return Inertia::render('Products/ProductCreate');
     }
 }
